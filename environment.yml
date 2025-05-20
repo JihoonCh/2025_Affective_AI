@@ -1,0 +1,46 @@
+name: misa-code
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip
+  - numpy=1.24
+  - scipy
+  - scikit-learn
+  - pandas
+  - matplotlib
+  - nltk
+  - spacy
+  - cython
+  - mkl
+  - cudatoolkit=11.8
+  - pytorch=1.13.1
+  - torchvision
+  - torchaudio=0.13.1
+  - autopep8
+  - requests
+  - flask
+  - flask-cors
+  - jupyter
+  - ipykernel
+  - notebook
+  - pillow
+  - regex
+  - tqdm
+  - pip:
+      - allennlp==2.10.1
+      - transformers==4.30.2
+      - sentencepiece
+      - tokenizers
+      - jsonlines
+      - jsonnet
+      - pytorch-pretrained-bert
+      - tensorboard
+      - tensorboardx
+      - opt-einsum
+      - overrides
+      - word2number
+      - ftfy
+      - yarg
