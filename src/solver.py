@@ -103,7 +103,7 @@ class Solver(object):
             train_loss = []
             for batch in self.train_data_loader:
                 self.model.zero_grad()
-                t, v, a, y, l, bert_sent, bert_sent_type, bert_sent_mask = batch
+                t, v, a, y, l, roberta_sent, roberta_sent_mask = batch
 
                 batch_size = t.size(0)
                 t = to_gpu(t)
@@ -111,11 +111,10 @@ class Solver(object):
                 a = to_gpu(a)
                 y = to_gpu(y)
                 l = to_gpu(l)
-                bert_sent = to_gpu(bert_sent)
-                bert_sent_type = to_gpu(bert_sent_type)
-                bert_sent_mask = to_gpu(bert_sent_mask)
+                roberta_sent = to_gpu(roberta_sent)
+                roberta_sent_mask = to_gpu(roberta_sent_mask)
 
-                y_tilde = self.model(t, v, a, l, bert_sent, bert_sent_type, bert_sent_mask)
+                y_tilde = self.model(t, v, a, l, roberta_sent, roberta_sent_mask)
                 
                 if self.train_config.data == "ur_funny":
                     y = y.squeeze()
@@ -202,18 +201,17 @@ class Solver(object):
 
             for batch in dataloader:
                 self.model.zero_grad()
-                t, v, a, y, l, bert_sent, bert_sent_type, bert_sent_mask = batch
+                t, v, a, y, l, roberta_sent, roberta_sent_mask = batch
 
                 t = to_gpu(t)
                 v = to_gpu(v)
                 a = to_gpu(a)
                 y = to_gpu(y)
                 l = to_gpu(l)
-                bert_sent = to_gpu(bert_sent)
-                bert_sent_type = to_gpu(bert_sent_type)
-                bert_sent_mask = to_gpu(bert_sent_mask)
+                roberta_sent = to_gpu(roberta_sent)
+                roberta_sent_mask = to_gpu(roberta_sent_mask)
 
-                y_tilde = self.model(t, v, a, l, bert_sent, bert_sent_type, bert_sent_mask)
+                y_tilde = self.model(t, v, a, l, roberta_sent, roberta_sent_mask)
 
                 if self.train_config.data == "ur_funny":
                     y = y.squeeze()

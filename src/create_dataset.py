@@ -305,7 +305,8 @@ class MOSEI:
             # first we align to words with averaging, collapse_function receives a list of functions
             dataset.align(text_field, collapse_functions=[avg])
 
-            label_field = 'CMU_MOSEI_LabelsSentiment'
+            # label_field = 'CMU_MOSEI_LabelsSentiment' # 데이터셋 업데이트 전
+            label_field = 'CMU_MOSEI_Labels'
 
             # we add and align to lables to obtain labeled segments
             # this time we don't apply collapse functions so that the temporal sequences are preserved

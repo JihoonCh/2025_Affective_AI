@@ -7,13 +7,13 @@ import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
 from torch.utils.data import DataLoader, Dataset
-from transformers import BertTokenizer
+from transformers import RobertaTokenizer
 
 
 from create_dataset import MOSI, MOSEI, UR_FUNNY, PAD, UNK
 
 
-bert_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+roberta_tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
 
 
 class MSADataset(Dataset):
@@ -77,25 +77,22 @@ def get_loader(config, shuffle=True):
         SENT_LEN = sentences.size(0)
         # Create bert indices using tokenizer
 
-        bert_details = []
+        roberta_details  = []
         for sample in batch:
             text = " ".join(sample[0][3])
-            encoded_bert_sent = bert_tokenizer.encode_plus(
-                text, max_length=SENT_LEN+2, add_special_tokens=True, pad_to_max_length=True)
-            bert_details.append(encoded_bert_sent)
+            encoded_roberta_sent = roberta_tokenizer.encode_plus(
+                text, max_length=SENT_LEN+2, add_special_tokens=True, padding='max_length', truncation=True)
+            roberta_details.append(encoded_roberta_sent)
 
 
         # Bert things are batch_first
-        bert_sentences = torch.LongTensor([sample["input_ids"] for sample in bert_details])
-        bert_sentence_types = torch.LongTensor([sample["token_type_ids"] for sample in bert_details])
-        bert_sentence_att_mask = torch.LongTensor([sample["attention_mask"] for sample in bert_details])
-
+        roberta_sentences = torch.LongTensor([sample["input_ids"] for sample in roberta_details])
+        roberta_sentence_att_mask = torch.LongTensor([sample["attention_mask"] for sample in roberta_details])
 
         # lengths are useful later in using RNNs
         lengths = torch.LongTensor([sample[0][0].shape[0] for sample in batch])
 
-        return sentences, visual, acoustic, labels, lengths, bert_sentences, bert_sentence_types, bert_sentence_att_mask
-
+        return sentences, visual, acoustic, labels, lengths, roberta_sentences, roberta_sentence_att_mask
 
     data_loader = DataLoader(
         dataset=dataset,

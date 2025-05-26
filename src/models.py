@@ -5,17 +5,19 @@ import torch
 import torch.nn as nn
 from torch.autograd import Function
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
-from transformers import BertModel, BertConfig
+from transformers import RobertaModel, RobertaTokenizer, RobertaConfig
 import math
 from utils import to_gpu
 from utils import ReverseLayerF
 
-
+# 마스크된 위치만 평균을 계산하는 함수
 def masked_mean(tensor, mask, dim):
     """Finding the mean along dim"""
     masked = torch.mul(tensor, mask)
     return masked.sum(dim=dim) / mask.sum(dim=dim)
 
+# 마스크된 위치만 최대값을 계산하는 함수
+# 멀티모달 시퀀스에서 패딩된 부분을 제외하고 유효한 부분만 연산할 때 사용
 def masked_max(tensor, mask, dim):
     """Finding the max along dim"""
     masked = torch.mul(tensor, mask)
@@ -49,14 +51,15 @@ class MISA(nn.Module):
 
         if self.config.use_bert:
 
-            # Initializing a BERT bert-base-uncased style configuration
-            bertconfig = BertConfig.from_pretrained('bert-base-uncased', output_hidden_states=True)
-            self.bertmodel = BertModel.from_pretrained('bert-base-uncased', config=bertconfig)
+            self.roberta_config = RobertaConfig.from_pretrained('roberta-base')
+            self.roberta_model = RobertaModel.from_pretrained('roberta-base', config=self.roberta_config)
+            self.roberta_tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+
         else:
             self.embed = nn.Embedding(len(config.word2id), input_sizes[0])
             self.trnn1 = rnn(input_sizes[0], hidden_sizes[0], bidirectional=True)
             self.trnn2 = rnn(2*hidden_sizes[0], hidden_sizes[0], bidirectional=True)
-        
+
         self.vrnn1 = rnn(input_sizes[1], hidden_sizes[1], bidirectional=True)
         self.vrnn2 = rnn(2*hidden_sizes[1], hidden_sizes[1], bidirectional=True)
         
@@ -185,23 +188,24 @@ class MISA(nn.Module):
 
         return final_h1, final_h2
 
-    def alignment(self, sentences, visual, acoustic, lengths, bert_sent, bert_sent_type, bert_sent_mask):
+    def alignment(self, sentences, visual, acoustic, lengths, roberta_sent, roberta_sent_mask):
         
         batch_size = lengths.size(0)
         
         if self.config.use_bert:
-            bert_output = self.bertmodel(input_ids=bert_sent, 
-                                         attention_mask=bert_sent_mask, 
-                                         token_type_ids=bert_sent_type)      
+            roberta_output = self.roberta_model(
+                input_ids=roberta_sent,
+                attention_mask=roberta_sent_mask
+            )
 
-            bert_output = bert_output[0]
+            roberta_output = roberta_output[0]
 
             # masked mean
-            masked_output = torch.mul(bert_sent_mask.unsqueeze(2), bert_output)
-            mask_len = torch.sum(bert_sent_mask, dim=1, keepdim=True)  
-            bert_output = torch.sum(masked_output, dim=1, keepdim=False) / mask_len
+            masked_output = torch.mul(roberta_sent_mask.unsqueeze(2), roberta_output)
+            mask_len = torch.sum(roberta_sent_mask, dim=1, keepdim=True)
+            roberta_output = torch.sum(masked_output, dim=1, keepdim=False) / mask_len
 
-            utterance_text = bert_output
+            utterance_text = roberta_output
         else:
             # extract features from text modality
             sentences = self.embed(sentences)
@@ -281,9 +285,9 @@ class MISA(nn.Module):
         self.utt_shared_a = self.shared(utterance_a)
 
 
-    def forward(self, sentences, video, acoustic, lengths, bert_sent, bert_sent_type, bert_sent_mask):
+    def forward(self, sentences, video, acoustic, lengths, roberta_sent, roberta_sent_mask):
         batch_size = lengths.size(0)
-        o = self.alignment(sentences, video, acoustic, lengths, bert_sent, bert_sent_type, bert_sent_mask)
+        o = self.alignment(sentences, video, acoustic, lengths, roberta_sent, roberta_sent_mask)
         return o
 
 # 파라미터 수 count하는 함수

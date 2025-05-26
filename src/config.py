@@ -9,17 +9,22 @@ from torch import optim
 import torch.nn as nn
 
 # path to a pretrained word embedding file
-word_emb_path = "/home/ivpl-d27/jhchoi/glove/glove.6B.300d.txt"
+word_emb_path = "/mnt/HDD/glove/glove.6B.300d.txt"
 assert(word_emb_path is not None)
 
-
 username = Path.home().name
+
+# 데이터 설정 방식
 project_dir = Path(__file__).resolve().parent.parent
 # sdk_dir = project_dir.joinpath('CMU-MultimodalSDK')
 sdk_dir = "/home/ivpl-d27/jhchoi/CMU-MultimodalSDK/"
-data_dir = project_dir.joinpath('datasets')
-data_dict = {'mosi': data_dir.joinpath('MOSI'), 'mosei': data_dir.joinpath(
-    'MOSEI'), 'ur_funny': data_dir.joinpath('UR_FUNNY')}
+# data_dir = project_dir.joinpath('datasets')
+data_dir = Path("/mnt/HDD/")
+data_dict = {
+    'mosi': data_dir.joinpath('CMU_MOSI'),
+    'mosei': data_dir.joinpath('CMU_MOSEI'),
+    'ur_funny': data_dir.joinpath('UR_FUNNY')
+}
 optimizer_dict = {'RMSprop': optim.RMSprop, 'Adam': optim.Adam}
 activation_dict = {'elu': nn.ELU, "hardshrink": nn.Hardshrink, "hardtanh": nn.Hardtanh,
                    "leakyrelu": nn.LeakyReLU, "prelu": nn.PReLU, "relu": nn.ReLU, "rrelu": nn.RReLU,
