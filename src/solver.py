@@ -176,9 +176,6 @@ class Solver(object):
                 break
 
         self.eval(mode="test", to_print=True)
-
-
-
     
     def eval(self,mode=None, to_print=False):
         assert(mode is not None)
@@ -245,7 +242,6 @@ class Solver(object):
         Metric scheme adapted from:
         https://github.com/yaohungt/Multimodal-Transformer/blob/master/src/eval_metrics.py
         """
-
 
         if self.train_config.data == "ur_funny":
             test_preds = np.argmax(y_pred, 1)
@@ -364,8 +360,3 @@ class Solver(object):
         loss += self.loss_recon(self.model.utt_a_recon, self.model.utt_a_orig)
         loss = loss/3.0
         return loss
-
-
-
-
-

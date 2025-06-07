@@ -33,6 +33,8 @@ class MSADataset(Dataset):
         self.data, self.word2id, self.pretrained_emb = dataset.get_data(config.mode)
         self.len = len(self.data)
 
+        print(self.data[0])
+
         config.visual_size = self.data[0][0][1].shape[1]
         config.acoustic_size = self.data[0][0][2].shape[1]
 

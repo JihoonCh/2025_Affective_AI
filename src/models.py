@@ -44,8 +44,9 @@ class MISA(nn.Module):
         self.dropout_rate = dropout_rate = config.dropout
         self.activation = self.config.activation()
         self.tanh = nn.Tanh()
-        
-        
+
+        self.cross_attn = nn.MultiheadAttention(embed_dim=self.config.hidden_size, num_heads=2, batch_first=True)
+
         rnn = nn.LSTM if self.config.rnncell == "lstm" else nn.GRU
         # defining modules - two layer bidirectional LSTM with layer norm in between
 
@@ -147,12 +148,17 @@ class MISA(nn.Module):
         self.sp_discriminator.add_module('sp_discriminator_layer_1', nn.Linear(in_features=config.hidden_size, out_features=4))
 
 
-
-        self.fusion = nn.Sequential()
-        self.fusion.add_module('fusion_layer_1', nn.Linear(in_features=self.config.hidden_size*6, out_features=self.config.hidden_size*3))
-        self.fusion.add_module('fusion_layer_1_dropout', nn.Dropout(dropout_rate))
-        self.fusion.add_module('fusion_layer_1_activation', self.activation)
-        self.fusion.add_module('fusion_layer_3', nn.Linear(in_features=self.config.hidden_size*3, out_features= output_size))
+        # self.fusion = nn.Sequential()
+        # self.fusion.add_module('fusion_layer_1', nn.Linear(in_features=self.config.hidden_size*6, out_features=self.config.hidden_size*3))
+        # self.fusion.add_module('fusion_layer_1_dropout', nn.Dropout(dropout_rate))
+        # self.fusion.add_module('fusion_layer_1_activation', self.activation)
+        # self.fusion.add_module('fusion_layer_3', nn.Linear(in_features=self.config.hidden_size*3, out_features= output_size))
+        self.fusion = nn.Sequential(
+            nn.Linear(self.config.hidden_size * 2, self.config.hidden_size * 3),
+            nn.Dropout(self.config.dropout),
+            self.activation,
+            nn.Linear(self.config.hidden_size * 3, self.config.num_classes)
+        )
 
         self.tlayer_norm = nn.LayerNorm((hidden_sizes[0]*2,))
         self.vlayer_norm = nn.LayerNorm((hidden_sizes[1]*2,))
@@ -224,6 +230,7 @@ class MISA(nn.Module):
 
         # Shared-private encoders
         self.shared_private(utterance_text, utterance_video, utterance_audio)
+        h_ccc_tva = self.utt_shared_t + self.utt_shared_v + self.utt_shared_a  # (batch, dim)
 
 
         if not self.config.use_cmd_sim:
@@ -248,13 +255,33 @@ class MISA(nn.Module):
         
         # For reconstruction
         self.reconstruct()
-        
-        # 1-LAYER TRANSFORMER FUSION
-        h = torch.stack((self.utt_private_t, self.utt_private_v, self.utt_private_a, self.utt_shared_t, self.utt_shared_v,  self.utt_shared_a), dim=0)
-        h = self.transformer_encoder(h)
-        h = torch.cat((h[0], h[1], h[2], h[3], h[4], h[5]), dim=1)
-        o = self.fusion(h)
+
+        # --- Cross-Attention Fusion for private representations ---
+        # (batch, dim) -> (batch, 1, dim)
+        h_t_p = self.utt_private_t.unsqueeze(1)
+        h_v_p = self.utt_private_v.unsqueeze(1)
+        h_a_p = self.utt_private_a.unsqueeze(1)
+        # (batch, 3, dim)
+        private_stack = torch.cat([h_t_p, h_v_p, h_a_p], dim=1)
+
+        # text-private을 query로, 나머지 private들을 key/value로 사용 (batch, 1, dim) vs (batch, 3, dim)
+        # batch_first=True이므로 (batch, seq, dim)
+        q = h_t_p  # (batch, 1, dim)
+        k = v = private_stack  # (batch, 3, dim)
+        h_ppp_tva, attn_weights = self.cross_attn(q, k, v)  # (batch, 1, dim)
+        h_ppp_tva = h_ppp_tva.squeeze(1)  # (batch, dim)
+
+        # --- 최종 fusion ---
+        h_fused = torch.cat([h_ccc_tva, h_ppp_tva], dim=1)  # (batch, dim*2)
+        o = self.fusion(h_fused)
         return o
+        
+        # # 1-LAYER TRANSFORMER FUSION
+        # h = torch.stack((self.utt_private_t, self.utt_private_v, self.utt_private_a, self.utt_shared_t, self.utt_shared_v,  self.utt_shared_a), dim=0)
+        # h = self.transformer_encoder(h)
+        # h = torch.cat((h[0], h[1], h[2], h[3], h[4], h[5]), dim=1)
+        # o = self.fusion(h)
+        # return o
     
     def reconstruct(self,):
 

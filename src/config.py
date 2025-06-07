@@ -17,9 +17,9 @@ username = Path.home().name
 # 데이터 설정 방식
 project_dir = Path(__file__).resolve().parent.parent
 # sdk_dir = project_dir.joinpath('CMU-MultimodalSDK')
-sdk_dir = "/home/ivpl-d27/jhchoi/CMU-MultimodalSDK/"
+sdk_dir = "/home/ivpl-d27/jhchoi/MISA/CMU-MultimodalSDK/"
 # data_dir = project_dir.joinpath('datasets')
-data_dir = Path("/mnt/HDD/")
+data_dir = Path("/mnt/HDD/dataset/")
 data_dict = {
     'mosi': data_dir.joinpath('CMU_MOSI'),
     'mosei': data_dir.joinpath('CMU_MOSEI'),
