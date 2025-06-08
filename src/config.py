@@ -92,7 +92,7 @@ def get_config(parse=True, **optional_kwargs):
     parser.add_argument('--num_classes', type=int, default=0)
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--eval_batch_size', type=int, default=10)
-    parser.add_argument('--n_epoch', type=int, default=500)
+    parser.add_argument('--n_epoch', type=int, default=100)
     parser.add_argument('--patience', type=int, default=6)
 
     parser.add_argument('--diff_weight', type=float, default=0.3)
@@ -117,7 +117,7 @@ def get_config(parse=True, **optional_kwargs):
                         default='MISA', help='one of {MISA, }')
 
     # Data
-    parser.add_argument('--data', type=str, default='mosi')
+    parser.add_argument('--data', type=str, default='mosei')
 
     # Parse arguments
     if parse:
@@ -127,10 +127,10 @@ def get_config(parse=True, **optional_kwargs):
 
     print(kwargs.data)
     if kwargs.data == "mosi":
-        kwargs.num_classes = 1
+        kwargs.num_classes = 7
         kwargs.batch_size = 64
     elif kwargs.data == "mosei":
-        kwargs.num_classes = 1
+        kwargs.num_classes = 7
         kwargs.batch_size = 16
     elif kwargs.data == "ur_funny":
         kwargs.num_classes = 2
