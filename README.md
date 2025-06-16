@@ -1,11 +1,7 @@
-# MISA: Modality-Invariant and -Specific Representations for Multimodal Sentiment Analysis
-Code for the [ACM MM 2020](https://2020.acmmm.org) paper [MISA: Modality-Invariant and -Specific Representations for Multimodal Sentiment Analysis](https://arxiv.org/pdf/2005.03545.pdf)
+# Decoupled Fusion Strategy: Cross-Attention for Private Modality Representations in Sentiment Analysis
 
 
-<p align="center">
-  <img width="600" src="misa-pic.png">
-</p>
-
+![d392f005f037c515a88c9ada65de278608f9062e](https://github.com/user-attachments/assets/7a1fec91-c76d-4c46-8c11-bab88b970b7f)
 
 
 ### Setup the environment
@@ -28,21 +24,5 @@ conda activate misa-code
 1. ```cd src```
 2. Set ```word_emb_path``` in ```config.py``` to [glove file](http://nlp.stanford.edu/data/glove.840B.300d.zip).
 3. Set ```sdk_dir``` to the path of CMU-MultimodalSDK.
-2. ```python train.py --data mosi```. Replace ```mosi``` with ```mosei``` or ```ur_funny``` for other datasets.
+2. ```python train.py --data mosei```. Replace ```mosi``` with ```mosei```  for other datasets.
 
-### Citation
-
-If this paper is useful for your research, please cite us at:
-
-```
-@article{hazarika2020misa,
-  title={MISA: Modality-Invariant and-Specific Representations for Multimodal Sentiment Analysis},
-  author={Hazarika, Devamanyu and Zimmermann, Roger and Poria, Soujanya},
-  journal={arXiv preprint arXiv:2005.03545},
-  year={2020}
-}
-```
-
-### Contact
-
-For any questions, please email at [hazarika@comp.nus.edu.sg](mailto:hazarika@comp.nus.edu.sg)
