@@ -24,5 +24,5 @@ conda activate misa-code
 1. ```cd src```
 2. Set ```word_emb_path``` in ```config.py``` to [glove file](http://nlp.stanford.edu/data/glove.840B.300d.zip).
 3. Set ```sdk_dir``` to the path of CMU-MultimodalSDK.
-2. ```python train.py --data mosei```. Replace ```mosi``` with ```mosei```  for other datasets.
+2. ```python train.py --data mosei```. Replace ```mosei``` with ```mosi```  for other datasets.
 
